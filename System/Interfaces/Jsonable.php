@@ -1,6 +1,6 @@
 <?php
 
-namespace Interfaces;
+namespace System\Interfaces;
 
 interface Jsonable{
     public function toJson();

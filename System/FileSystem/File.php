@@ -1,35 +1,35 @@
 <?php
 
-namespace FileSystem;
+namespace System\FileSystem;
 
 class File{
-    protected $fileName;
+    protected string $fileName;
 
     public function __construct($fileName){
         $this->fileName = $fileName;
     }
 
-    public function isExists(){
+    public function isExists() : bool {
         return file_exists($this->fileName);
     }
 
-    public function getFileName(){
+    public function getFileName() : string {
         return $this->fileName;
     }
 
-    public function getContent(){
+    public function getContent() : string {
         return file_get_contents($this->fileName);
     }
 
-    public function getLines(){
+    public function getLines() : array {
         return explode("\n", $this->getContent());
     }
 
-    public function copy($destination){
+    public function copy($destination) : bool {
         return copy($this->fileName, $destination);
     }
 
-    public function deleteFile(){
+    public function deleteFile() : bool {
         return unlink($this->fileName);
     }
 }
