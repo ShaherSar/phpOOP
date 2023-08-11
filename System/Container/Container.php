@@ -2,91 +2,81 @@
 
 namespace System\Container;
 
+//tutorial code
 class Container{
-    protected array $bindings;
-
-    protected static ?Container $instance = null;
-
-    protected function __construct(){
-
-    }
-
-    public static function getInstance(){
-
-        if(is_null(self::$instance)){
-            self::$instance = new static();
-        }
-
-        return self::$instance;
-    }
-
-    //$abstract :: abstract class , interface
-    //$concrete :: instance of class or extends the abstract class, interface
+    protected array $bindings = [];
 
     public function bind($abstract, $concrete){
         $this->bindings[$abstract] = $concrete;
     }
 
-    //build instance of abstract class, interface passed
-    //build dependencies for that class passed
-    //throw exception if something goes wrong
-    public function resolve($abstract){
+    protected function isCreatable($abstract){
+        $reflection = new \ReflectionClass($abstract);
 
-        if(!$this->bindings[$abstract]){
-            $this->ensureClassIsInitial($abstract);
+        if(!$reflection->isInstantiable()){
+            throw new \Exception("class not initiable");
+        }
+    }
+
+    public function resolve($abstract){
+        echo "\r\n Resolve Method Called :: Abstract :: " . $abstract;
+
+        if(!isset($this->bindings[$abstract])){
+            $this->isCreatable($abstract);
         }
 
         $concrete = $this->bindings[$abstract] ?? $abstract;
 
-        if(is_callable($concrete)){
-            return call_user_func($concrete);
-        }
+        echo "\r\n Concrete :: " . $concrete;
 
         return $this->buildInstance($concrete);
     }
 
-    protected function ensureClassIsInitial($abstract){
-        $reflection = new \ReflectionClass($abstract);
-
-        if(!$reflection->isInstantiable()){
-            throw new \Exception("class init error");
-        }
-
-    }
-
     protected function buildInstance($class){
+        echo "\r\n##########################\r\n";
+        echo "\r\n BuildInstance Called :: Class :: " . $class;
+
         $reflection = new \ReflectionClass($class);
 
         $constructor = $reflection->getConstructor();
 
-        if(isset($this->bindings[$class]) and is_callable($this->bindings[$class])){
-            return call_user_func($this->bindings[$class]);
-        }
+        if(!$constructor){
+            echo "\r\n Constructor not Found ..";
 
-        if(!$constructor and $reflection->isInstantiable()){
-            return new $class();
-        }
+            if($reflection->isInstantiable()){
+                echo "\r\n Class  :: " . $class . " is isInstantiable .. return new instance";
+                return $reflection->newInstance();
+            }
 
-        if(!$constructor and $this->bindings[$class]){
-            return $this->buildInstance($this->bindings[$class]);
-        }
+            if(isset($this->bindings[$class])){
+                echo "\r\n Class :: " . $class . " .. has Binding to " . $this->bindings[$class];
+                echo "\r\n return Building Instance of " . $this->bindings[$class];
+                return $this->buildInstance($this->bindings[$class]);
+            }
 
-        if(!$constructor and !isset($this->bindings[$class])){
             throw new \Exception("no binding provided for class :: " . $class);
         }
 
+        echo "\r\nConstructor Found ...";
+
         $params = $constructor->getParameters();
 
-        $deps = [];
+        echo "\r\nParams for the Constructor Are Below ::\r\n";
+        print_r($params);
+
+        $paramInstances = [];
 
         foreach($params as $param){
-            if(!$param->getType() and !$param->isOptional()){
-                throw new \Exception($param->getType()." is not correct . :: " . $param->getName());
-            }
+            echo "\r\n Param Class Name :: " . $param->getType()->getName()."\r\n";
 
-            $deps[] = $this->buildInstance($param->getType());
+            $paramInstances[] = $this->buildInstance($param->getType()->getName());
         }
 
-        return new $class(...$deps);
+        echo "\r\n Generated Params Instances Below ::\r\n";
+
+        print_r($paramInstances);
+
+        echo "Returning New Instance Of Class :: " . $class;
+        return $reflection->newInstanceArgs($paramInstances);
     }
 }
