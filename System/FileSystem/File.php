@@ -2,7 +2,7 @@
 
 namespace System\FileSystem;
 
-class File{
+class File implements FileInterface{
     protected string $fileName;
 
     public function __construct($fileName){

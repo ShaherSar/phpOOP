@@ -2,8 +2,10 @@
 
 namespace System\Collections;
 
-interface CollectionInterface
-{
+use System\Interfaces\Arrayable;
+use System\Interfaces\Jsonable;
+
+interface CollectionInterface extends Jsonable, Arrayable, \Countable{
     public function push ($element, $key = null);
 
     public function each ($callBack): void;

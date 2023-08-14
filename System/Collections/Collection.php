@@ -2,10 +2,7 @@
 
 namespace System\Collections;
 
-use System\Interfaces\Arrayable;
-use System\Interfaces\Jsonable;
-
-class Collection implements Jsonable, Arrayable, \Countable {
+class Collection implements CollectionInterface{
     protected array $elements = [];
 
     public function push($element, $key = null){
@@ -27,9 +24,7 @@ class Collection implements Jsonable, Arrayable, \Countable {
     }
 
     public function each($callBack) : void {
-        foreach($this->elements as $key => $element){
-
-        }
+        call_user_func($callBack);
     }
 
     public function map($callBack) : Collection {
